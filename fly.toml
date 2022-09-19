@@ -1,0 +1,40 @@
+# fly.toml file generated for phone-invoces on 2022-09-17T22:42:04+03:00
+
+app = "phone-invoces"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[env]
+  POSTGRES_HOST="phone-invoces-db.internal"
+  POSTGRES_PORT="5432"
+  MODE="DEV"
+  NODE_ENV="production"
+  PORT="3000"
+  JWT_EXPIRATION_TIME="172800"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[[services]]
+  internal_port = 3000
+  protocol = "tcp"
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = "80"
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = "443"
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    port = "3000"
+    restart_limit = 6
+    timeout = "2s"

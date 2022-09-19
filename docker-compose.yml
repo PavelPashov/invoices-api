@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  api:
+    container_name: phone-invoices-api
+    image: phone-invoices-api
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    env_file:
+      - dev.env
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - "${PWD}:/usr/src/app"
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: db-phones-invoices
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/data/postgres
+    env_file:
+      - dev.env
+
+volumes:
+  # This volume should be removed if new dependencies are installed
+  node_modules:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${PWD}/node_modules"
+  postgres:
