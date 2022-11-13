@@ -5,17 +5,25 @@ export enum TemplateNames {
   SUMMED = 'summed',
 }
 
-type PdfPhone = {
+export enum PdfReportTypes {
+  GROUP = 'група',
+  LOCATION = 'локация',
+}
+
+export type SummedEntity = {
   name: string;
-  tag: string;
-  price: string;
-  location: string;
-  number: string;
+  sum: number;
 };
 
 export interface PdfParamsAllNumbers {
   name: string;
-  array: PdfPhone[];
+  array: Phone[];
   sum: number;
-  groupArray: { name: string; sum: number }[];
+  groupArray: SummedEntity[];
+}
+
+export interface PdfParamsSummed {
+  name: string;
+  array: SummedEntity[];
+  type: PdfReportTypes;
 }

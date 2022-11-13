@@ -23,7 +23,7 @@ export const createTotalSumArray = <T extends Record<string, any>>(
   }, {});
   return Object.keys(object).map((k) => ({
     name: k,
-    sum: Number(object[k].toFixed(2)),
+    sum: Number(Number(object[k]).toFixed(2)),
   }));
 };
 
@@ -65,15 +65,19 @@ export const getFiles = async (outputDir: string): Promise<string[]> => {
   return Array.prototype.concat(...files);
 };
 
+export const removeDir = async (dirPath: string) => {
+  await fs.rm(dirPath, {
+    recursive: true,
+    force: true,
+  });
+};
+
 export const removeZipAndDir = async (
   filepath: string,
   dir: string,
 ): Promise<void> => {
   await fs.unlink(filepath);
-  await fs.rm(dir, {
-    recursive: true,
-    force: true,
-  });
+  await removeDir(dir);
 };
 
 export const openJson = async (filePath: string) => {

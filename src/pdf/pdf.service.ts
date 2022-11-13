@@ -3,13 +3,17 @@ import * as puppeteer from 'puppeteer';
 import * as hbs from 'handlebars';
 import { resolve, join } from 'path';
 import {
+  SummedEntity,
   PdfParamsAllNumbers,
+  PdfParamsSummed,
+  PdfReportTypes,
   TemplateNames,
 } from './interfaces/pdfParameters.interface';
 import * as fs from 'fs/promises';
 import EntityNotFoundException from 'src/common/exceptions/EntityNotFound.exception';
-import { createTempDir } from 'src/common/utils';
-
+import { createTempDir, createTotalSumArray } from 'src/common/utils';
+import { Phone } from 'src/phone/phone.entity';
+import PDFMerger = require('pdf-merger-js');
 @Injectable()
 export class PdfService {
   async launchBrowser() {
@@ -35,7 +39,7 @@ export class PdfService {
 
   async populateTemplate(
     templateName: string,
-    context: PdfParamsAllNumbers,
+    context: PdfParamsAllNumbers | PdfParamsSummed,
   ): Promise<string> {
     const html = await this.findTemplateHtml(templateName);
     const template = hbs.compile(html);
@@ -66,9 +70,11 @@ export class PdfService {
     return pdfBuffer;
   }
 
-  async savePdfToDisk(templateName: string, context: PdfParamsAllNumbers) {
-    const tempDir = await createTempDir();
-
+  async savePdfToDisk(
+    templateName: string,
+    context: PdfParamsAllNumbers | PdfParamsSummed,
+    dirPath: string,
+  ) {
     const browser = await this.launchBrowser();
 
     const page = await browser.newPage();
@@ -76,14 +82,81 @@ export class PdfService {
     const content = await this.populateTemplate(templateName, context);
     await page.setContent(content, { waitUntil: 'networkidle2' });
 
-    const absoluteFilePath = join(tempDir, `${templateName}.pdf`);
+    const absoluteFilePath = join(dirPath, `${context.name}.pdf`);
+    await page.emulateMediaType('screen');
     await page.pdf({
       path: absoluteFilePath,
+      printBackground: true,
+      margin: {
+        top: '10mm',
+        right: '10mm',
+        bottom: '10mm',
+        left: '10mm',
+      },
+      displayHeaderFooter: true,
+      footerTemplate: `<div style="text-align: right;width: 297mm;font-size: 8px;"><span style="margin-right: 1cm">${context.name} <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`,
       format: 'A4',
     });
 
     await browser.close();
 
     return absoluteFilePath;
+  }
+
+  async saveAllPdfToDisk(
+    calculatedPhoneArrays: Phone[][],
+    calculatedPhonesByGroup: SummedEntity[],
+    calculatedPhonesByLocation: SummedEntity[],
+  ) {
+    const dirPath = await createTempDir();
+
+    const promises = calculatedPhoneArrays
+      .filter((phonesArray: Phone[]) => !!phonesArray.length)
+      .map((phonesArray: Phone[]) => {
+        return this.savePdfToDisk(
+          TemplateNames.ALL_NUMBERS,
+          {
+            array: phonesArray,
+            name: phonesArray[0].invoice ?? 'test',
+            sum: Number(
+              phonesArray
+                .reduce((sum, num) => sum + Number(num.price), 0)
+                .toFixed(2),
+            ),
+            groupArray: createTotalSumArray(phonesArray, 'tag'),
+          },
+          dirPath,
+        );
+      });
+
+    const filesArray = await Promise.all([
+      ...promises,
+      this.savePdfToDisk(
+        TemplateNames.SUMMED,
+        {
+          array: calculatedPhonesByGroup,
+          name: 'Сумирани групи',
+          type: PdfReportTypes.GROUP,
+        },
+        dirPath,
+      ),
+      this.savePdfToDisk(
+        TemplateNames.SUMMED,
+        {
+          array: calculatedPhonesByLocation,
+          name: 'Сумирани локации',
+          type: PdfReportTypes.LOCATION,
+        },
+        dirPath,
+      ),
+    ]);
+
+    return { dirPath, files: filesArray };
+  }
+
+  async mergeAllPdfFiles(filePaths: string[]) {
+    const merger = new PDFMerger();
+    await Promise.all(filePaths.map(async (f) => await merger.add(f)));
+    return merger.saveAsBuffer();
   }
 }

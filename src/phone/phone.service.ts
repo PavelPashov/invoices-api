@@ -1,9 +1,13 @@
+import { PdfReportTypes } from './../pdf/interfaces/pdfParameters.interface';
 import { PdfService } from './../pdf/pdf.service';
 import { HistoryRecordService } from './../history-record/history-record.service';
 import { HistoryRecord } from './../history-record/history-record.entity';
 import {
+  createTempDir,
+  createTotalSumArray,
   getFiles,
   openJson,
+  removeDir,
   removeZipAndDir,
   saveFile,
   unzipFile,
@@ -17,7 +21,6 @@ import { isZipFile } from 'src/common/utils';
 import { Charge, InvoiceCharge } from './dto/charge.dto';
 import CreatePhoneDto from './dto/createPhone.dto';
 import { Phone } from './phone.entity';
-import { TemplateNames } from 'src/pdf/interfaces/pdfParameters.interface';
 
 @Injectable()
 export class PhoneService {
@@ -29,9 +32,7 @@ export class PhoneService {
   ) {}
 
   async findAll(): Promise<Phone[]> {
-    const bruh = await this.phoneRepository.findAll({ populate: true });
-    console.log('bruh: ', bruh);
-    return bruh;
+    return this.phoneRepository.findAll({ populate: true });
   }
 
   async findOne(id: number): Promise<Phone> {
@@ -66,25 +67,31 @@ export class PhoneService {
   async calculatePrices(charges: Charge[]): Promise<Phone[]> {
     const phones = await this.findAll();
 
+    const newPhones: Phone[] = [];
+
     charges.forEach((charge) => {
       const newCharge = new InvoiceCharge(charge);
       const number = phones.find((n) => n.number === newCharge.msisdn);
       if (number) {
-        number.price = newCharge.price;
+        newPhones.push({
+          ...number,
+          price: newCharge.price,
+          invoice: newCharge.invoice,
+        });
       }
     });
 
-    return phones;
+    return newPhones;
   }
 
-  async parseInvoiceZip(file: Express.Multer.File): Promise<Charge[]> {
+  async parseInvoiceZip(file: Express.Multer.File): Promise<Charge[][]> {
     if (!isZipFile(file)) throw new IncorrectFileException();
 
     const savedFile = await saveFile(file);
     const unzippedDir = await unzipFile(savedFile);
     const invoiceFiles = await getFiles(unzippedDir);
 
-    const parsedInvoices: Charge[] = await Promise.all(
+    const parsedInvoices: Charge[][] = await Promise.all(
       invoiceFiles.map(
         async (invoiceFile) =>
           (
@@ -92,40 +99,43 @@ export class PhoneService {
           ).summaryCharges.summaryCharge,
       ),
     );
+
     await removeZipAndDir(savedFile, unzippedDir);
-    return Array.prototype.concat(...parsedInvoices);
+    return parsedInvoices;
   }
 
   async handleZipUpload(file: Express.Multer.File) {
-    const invoicesArray = await this.parseInvoiceZip(file);
+    const invoicesArrays = await this.parseInvoiceZip(file);
 
-    const calculatedPhones = await this.calculatePrices(invoicesArray);
+    const calculatedPhoneArrays = await Promise.all(
+      invoicesArrays.map(async (array) => await this.calculatePrices(array)),
+    );
+
+    const calculatedPhones = Array.prototype.concat(...calculatedPhoneArrays);
+    const calculatedPhonesByGroup = createTotalSumArray(
+      calculatedPhones,
+      'tag',
+    );
+    const calculatedPhonesByLocation = createTotalSumArray(
+      calculatedPhones,
+      'location',
+    );
 
     // Create history records if they don't exist
     if (!this.historyRecordService.hasRecordedMonth(new Date())) {
       await this.historyRecordService.createMany(calculatedPhones);
     }
 
-    const finalPhones = calculatedPhones.map((phone) => {
-      return {
-        number: phone.number,
-        name: phone.name,
-        tag: phone?.tag?.name ?? 'Tag',
-        location: phone?.location.name ?? 'Location',
-        price: phone?.price ?? 'Price',
-      };
-    });
-
-    const bruh = await this.pdfService.savePdfToDisk(
-      TemplateNames.ALL_NUMBERS,
-      {
-        array: finalPhones,
-        name: 'test',
-        sum: 13,
-        groupArray: [{ name: 'TEST', sum: 13 }],
-      },
+    const { dirPath, files } = await this.pdfService.saveAllPdfToDisk(
+      calculatedPhoneArrays,
+      calculatedPhonesByGroup,
+      calculatedPhonesByLocation,
     );
 
-    return bruh;
+    const buffer = this.pdfService.mergeAllPdfFiles(files);
+
+    await removeDir(dirPath);
+
+    return buffer;
   }
 }

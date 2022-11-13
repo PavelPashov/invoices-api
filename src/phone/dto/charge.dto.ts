@@ -5,6 +5,7 @@ export class Charge {
   otherCharges?: number;
   usageDuration?: number;
   usageVolume?: number;
+  invoice?: string;
 }
 
 export class InvoiceCharge extends Charge {
@@ -16,6 +17,7 @@ export class InvoiceCharge extends Charge {
     this.otherCharges = params?.otherCharges ?? 0;
     this.usageDuration = params?.usageDuration ?? 0;
     this.usageVolume = params?.usageVolume ?? 0;
+    this.invoice = params?.invoice ?? 'invoice';
     this.price = Number(
       this.generalCharges +
         this.usageCount +

@@ -41,4 +41,6 @@ export class Phone {
   numbers = new Collection<HistoryRecord>(this);
 
   price?: string;
+
+  invoice?: string;
 }
