@@ -6,6 +6,8 @@ import { TagModule } from './tag/tag.module';
 import { LocationModule } from './location/location.module';
 import { PhoneModule } from './phone/phone.module';
 import { AuthModule } from './auth/auth.module';
+import { HistoryRecordModule } from './history-record/history-record.module';
+import { PdfModule } from './pdf/pdf.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -30,6 +32,8 @@ import * as Joi from 'joi';
     LocationModule,
     PhoneModule,
     AuthModule,
+    HistoryRecordModule,
+    PdfModule,
   ],
 })
 export class AppModule {}

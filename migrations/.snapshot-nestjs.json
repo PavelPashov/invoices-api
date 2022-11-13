@@ -180,6 +180,75 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "phone_id": {
+          "name": "phone_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamptz(0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "charge": {
+          "name": "charge",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        }
+      },
+      "name": "history_record",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "history_record_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "history_record_phone_id_foreign": {
+          "constraintName": "history_record_phone_id_foreign",
+          "columnNames": [
+            "phone_id"
+          ],
+          "localTableName": "public.history_record",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.phone",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "email": {
           "name": "email",
           "type": "varchar(255)",

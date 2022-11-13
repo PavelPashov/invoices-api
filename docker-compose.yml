@@ -9,7 +9,7 @@ services:
       dockerfile: ./Dockerfile
     command: npm run start:debug
     env_file:
-      - dev.env
+      - .env
     ports:
       - "3000:3000"
       - "9229:9229"
@@ -28,7 +28,7 @@ services:
     volumes:
       - postgres:/data/postgres
     env_file:
-      - dev.env
+      - .env
 
 volumes:
   # This volume should be removed if new dependencies are installed
