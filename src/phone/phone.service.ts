@@ -1,10 +1,8 @@
-import { PdfReportTypes } from './../pdf/interfaces/pdfParameters.interface';
 import { PdfService } from './../pdf/pdf.service';
 import { HistoryRecordService } from './../history-record/history-record.service';
-import { HistoryRecord } from './../history-record/history-record.entity';
 import {
-  createTempDir,
   createTotalSumArray,
+  getCurrentMonth,
   getFiles,
   openJson,
   removeDir,
@@ -14,13 +12,17 @@ import {
 } from './../common/utils';
 import { EntityRepository, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import EntityNotFoundException from 'src/common/exceptions/EntityNotFound.exception';
 import IncorrectFileException from 'src/common/exceptions/IncorrectFile.exception';
 import { isZipFile } from 'src/common/utils';
 import { Charge, InvoiceCharge } from './dto/charge.dto';
 import CreatePhoneDto from './dto/createPhone.dto';
 import { Phone } from './phone.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+import { basename } from 'path';
+import { User } from 'src/user/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PhoneService {
@@ -29,6 +31,8 @@ export class PhoneService {
     private readonly phoneRepository: EntityRepository<Phone>,
     private readonly historyRecordService: HistoryRecordService,
     private readonly pdfService: PdfService,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(): Promise<Phone[]> {
@@ -104,7 +108,11 @@ export class PhoneService {
     return parsedInvoices;
   }
 
-  async handleZipUpload(file: Express.Multer.File) {
+  async handleZipUpload(file: Express.Multer.File, user: User) {
+    if (!user?.email) {
+      throw new UnauthorizedException('User has no email');
+    }
+
     const invoicesArrays = await this.parseInvoiceZip(file);
 
     const calculatedPhoneArrays = await Promise.all(
@@ -132,10 +140,26 @@ export class PhoneService {
       calculatedPhonesByLocation,
     );
 
-    const buffer = this.pdfService.mergeAllPdfFiles(files);
+    const finalFilePath = await this.pdfService.mergeAllPdfFiles(
+      files,
+      dirPath,
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: `Фактури ${getCurrentMonth()}`,
+      from: this.configService.get('SENDER'),
+      text: `Фактури ${getCurrentMonth()}`,
+      html: `<b>Фактури ${getCurrentMonth()}</b>`,
+      attachments: [
+        {
+          path: finalFilePath,
+          filename: basename(finalFilePath),
+          contentDisposition: 'attachment',
+        },
+      ],
+    });
 
     await removeDir(dirPath);
-
-    return buffer;
   }
 }

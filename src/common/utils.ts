@@ -3,6 +3,7 @@ import * as AdmZip from 'adm-zip';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import * as os from 'os';
+import { Months } from './enums/months.enum';
 
 export const createTotalSumArray = <T extends Record<string, any>>(
   fromArray: T[],
@@ -90,4 +91,8 @@ export const createTempDir = async (): Promise<string> => {
   const dirPath = path.join(os.tmpdir(), uuid());
   await fs.mkdir(dirPath);
   return dirPath;
+};
+
+export const getCurrentMonth = () => {
+  return Months[new Date().getMonth()];
 };

@@ -5,9 +5,15 @@ import { PhoneService } from './phone.service';
 import { PhoneController } from './phone.controller';
 import { Phone } from './phone.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Phone]), HistoryRecordModule, PdfModule],
+  imports: [
+    MikroOrmModule.forFeature([Phone]),
+    HistoryRecordModule,
+    PdfModule,
+    ConfigModule,
+  ],
   providers: [PhoneService],
   controllers: [PhoneController],
 })

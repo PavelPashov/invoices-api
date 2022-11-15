@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -13,6 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from 'src/auth/guards/jwt-authentication.guard';
+import RequestWithUser from 'src/auth/interfaces/requestWithUser.interface';
 import FindOneParamDto from 'src/common/dto/findOneParam.dto';
 import CreatePhoneDto from './dto/createPhone.dto';
 import { PhoneService } from './phone.service';
@@ -73,7 +75,11 @@ export class PhoneController {
   })
   @UseGuards(JwtAuthenticationGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async parseInvoiceZip(@UploadedFile() file: Express.Multer.File) {
-    return this.phoneService.handleZipUpload(file);
+  async parseInvoiceZip(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: RequestWithUser,
+  ) {
+    const { user } = req;
+    return this.phoneService.handleZipUpload(file, user);
   }
 }

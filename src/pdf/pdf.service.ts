@@ -1,3 +1,4 @@
+import { getCurrentMonth } from './../common/utils';
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as hbs from 'handlebars';
@@ -154,9 +155,11 @@ export class PdfService {
     return { dirPath, files: filesArray };
   }
 
-  async mergeAllPdfFiles(filePaths: string[]) {
+  async mergeAllPdfFiles(filePaths: string[], dirPath: string) {
+    const savedPath = join(dirPath, `Фактури-${getCurrentMonth()}.pdf`);
     const merger = new PDFMerger();
     await Promise.all(filePaths.map(async (f) => await merger.add(f)));
-    return merger.saveAsBuffer();
+    await merger.save(savedPath);
+    return savedPath;
   }
 }

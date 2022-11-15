@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { HistoryRecordModule } from './history-record/history-record.module';
 import { PdfModule } from './pdf/pdf.module';
 import * as Joi from 'joi';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -24,7 +26,30 @@ import * as Joi from 'joi';
         POSTGRES_DB: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION_TIME: Joi.string().required(),
+        SENDER: Joi.string().required(),
+        MAIL_PASS: Joi.string().required(),
       }),
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.mail.yahoo.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.SENDER,
+          pass: process.env.MAIL_PASS,
+        },
+      },
+      defaults: {
+        from: process.env.SENDER,
+      },
+      template: {
+        dir: process.cwd() + '/template/',
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
     }),
     DatabaseModule,
     UserModule,
