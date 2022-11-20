@@ -27,8 +27,9 @@ export class PhoneController {
   @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthenticationGuard)
-  async findAll() {
-    return this.phoneService.findAll();
+  findAll() {
+    const phones = this.phoneService.findAll();
+    return phones;
   }
 
   @Get(':id')

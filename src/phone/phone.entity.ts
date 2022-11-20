@@ -26,11 +26,11 @@ export class Phone {
   name: string;
 
   @ApiPropertyOptional()
-  @ManyToOne({ entity: () => Tag, eager: true, nullable: true })
+  @ManyToOne({ entity: () => Tag, nullable: true })
   tag?: Tag;
 
   @ApiPropertyOptional()
-  @ManyToOne({ entity: () => Location, eager: true, nullable: true })
+  @ManyToOne({ entity: () => Location, nullable: true })
   location?: Location;
 
   @ApiProperty()

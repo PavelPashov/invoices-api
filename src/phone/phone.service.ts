@@ -36,7 +36,7 @@ export class PhoneService {
   ) {}
 
   async findAll(): Promise<Phone[]> {
-    return this.phoneRepository.findAll({ populate: true });
+    return this.phoneRepository.findAll({ populate: ["tag", "location"] });
   }
 
   async findOne(id: number): Promise<Phone> {

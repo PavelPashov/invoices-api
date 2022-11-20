@@ -13,7 +13,7 @@ export class LocationService {
   ) {}
 
   async findAll(): Promise<Location[]> {
-    return this.locationRepository.findAll();
+    return this.locationRepository.findAll({populate: ["numbers"]});
   }
 
   async findOne(id: number): Promise<Location> {

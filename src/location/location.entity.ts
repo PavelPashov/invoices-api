@@ -19,8 +19,6 @@ export class Location {
   name: string;
 
   @ApiProperty()
-  @OneToMany(() => Phone, (phone: Phone) => phone.location, {
-    eager: true,
-  })
+  @OneToMany(() => Phone, (phone: Phone) => phone.location)
   numbers = new Collection<Phone>(this);
 }

@@ -19,8 +19,6 @@ export class Tag {
   name: string;
 
   @ApiProperty()
-  @OneToMany(() => Phone, (phone: Phone) => phone.tag, {
-    eager: true,
-  })
+  @OneToMany(() => Phone, (phone: Phone) => phone.tag)
   numbers = new Collection<Phone>(this);
 }
