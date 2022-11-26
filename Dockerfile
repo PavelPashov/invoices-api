@@ -14,7 +14,7 @@ RUN apk update && apk add --no-cache nmap && \
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 RUN npm install --only=development
 
@@ -45,4 +45,7 @@ COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules/ ./node_modules
 COPY --from=development /usr/src/app/package*.json ./
 
-CMD ["node", "dist/src/main"]
+EXPOSE 5000
+ENV PORT 5000
+
+CMD ["node", "dist/main"]
