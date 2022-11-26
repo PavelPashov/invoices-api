@@ -18,16 +18,12 @@ export class AuthService {
     email: string,
     plainTextPassword: string,
   ): Promise<User | undefined> {
-    try {
       const user = await this.userService.getByEmail(email);
       if (user && user.password) {
         await this.verifyPassword(plainTextPassword, user.password);
         return user;
       }
-      throw new Error();
-    } catch (error) {
       throw new IncorrectCredentialsException();
-    }
   }
 
   private async verifyPassword(

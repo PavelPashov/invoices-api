@@ -10,7 +10,7 @@ import {
   saveFile,
   unzipFile,
 } from './../common/utils';
-import { EntityRepository, wrap } from '@mikro-orm/core';
+import { EntityRepository, wrap, QueryOrder } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import EntityNotFoundException from 'src/common/exceptions/EntityNotFound.exception';
@@ -23,6 +23,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { basename } from 'path';
 import { User } from 'src/user/user.entity';
 import { ConfigService } from '@nestjs/config';
+import UpdatePhoneDto from './dto/updatePhone.dto';
 
 @Injectable()
 export class PhoneService {
@@ -36,13 +37,15 @@ export class PhoneService {
   ) {}
 
   async findAll(): Promise<Phone[]> {
-    return this.phoneRepository.findAll({ populate: ["tag", "location"] });
+    return this.phoneRepository.findAll({ populate: ["tag", "location"], orderBy: [{ id: 1 }] });
   }
 
   async findOne(id: number): Promise<Phone> {
     const phone = await this.phoneRepository.findOne({
       id,
-    });
+    },
+    { populate: ["tag", "location"] }
+    );
     if (!phone) {
       throw new EntityNotFoundException('Phone');
     }
@@ -52,14 +55,14 @@ export class PhoneService {
   async create(data: CreatePhoneDto): Promise<Phone> {
     const newPhone = await this.phoneRepository.create(data);
     await this.phoneRepository.persistAndFlush(newPhone);
-    return newPhone;
+    return this.findOne(newPhone.id);
   }
 
-  async update(id: number, data: CreatePhoneDto): Promise<Phone> {
+  async update(id: number, data: UpdatePhoneDto): Promise<Phone> {
     const existingPhone = await this.findOne(id);
     wrap(existingPhone).assign(data);
     await this.phoneRepository.persistAndFlush(existingPhone);
-    return existingPhone;
+    return this.findOne(id);
   }
 
   async delete(id: number): Promise<Phone> {

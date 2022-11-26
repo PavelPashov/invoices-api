@@ -17,6 +17,7 @@ import JwtAuthenticationGuard from 'src/auth/guards/jwt-authentication.guard';
 import RequestWithUser from 'src/auth/interfaces/requestWithUser.interface';
 import FindOneParamDto from 'src/common/dto/findOneParam.dto';
 import CreatePhoneDto from './dto/createPhone.dto';
+import UpdatePhoneDto from './dto/updatePhone.dto';
 import { PhoneService } from './phone.service';
 
 @ApiTags('Phone')
@@ -42,7 +43,7 @@ export class PhoneController {
   @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthenticationGuard)
-  async update(@Param() { id }: FindOneParamDto, @Body() body: CreatePhoneDto) {
+  async update(@Param() { id }: FindOneParamDto, @Body() body: UpdatePhoneDto) {
     return this.phoneService.update(+id, body);
   }
 

@@ -13,7 +13,7 @@ export class TagService {
   ) {}
 
   async findAll(): Promise<Tag[]> {
-    return this.tagRepository.findAll({ populate: ["numbers"] });
+    return this.tagRepository.findAll({ orderBy: [{ id: 1 }] });
   }
 
   async findOne(id: number): Promise<Tag> {

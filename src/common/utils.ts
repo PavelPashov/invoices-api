@@ -10,16 +10,19 @@ export const createTotalSumArray = <T extends Record<string, any>>(
   attributeName: string,
 ) => {
   const object = fromArray.reduce<{ [key: string]: any }>((dict, cur) => {
-    if (!dict[cur[attributeName]['name']]) {
+    if (!cur[attributeName]) {
+      return dict;
+    }
+    if (cur[attributeName]['name'] && !dict[cur[attributeName]['name']]) {
       return {
         ...dict,
-        [cur[attributeName]['name']]: cur.price,
+        [cur[attributeName]['name']]: Number(cur.price),
       };
     }
     return {
       ...dict,
-      [cur[attributeName]['name']]:
-        dict[cur[attributeName]['name']] + cur.price,
+      [cur[attributeName]['name'] ?? ""]:
+        dict[cur[attributeName]['name'] ?? ""] + Number(cur.price),
     };
   }, {});
   return Object.keys(object).map((k) => ({
