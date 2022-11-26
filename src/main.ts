@@ -39,7 +39,13 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.enableCors();
+  
+  app.enableCors({
+    origin: true,
+    methods: 'GET, PUT, POST, DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
   await app.listen(3000);
 }
 bootstrap();
