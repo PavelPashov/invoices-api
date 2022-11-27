@@ -19,11 +19,11 @@ export class InvoiceCharge extends Charge {
     this.usageVolume = params?.usageVolume ?? 0;
     this.invoice = params?.invoice ?? 'invoice';
     this.price = Number(
-      this.generalCharges +
+      (this.generalCharges +
         this.usageCount +
         this.otherCharges +
         this.usageDuration +
-        this.usageVolume,
+        this.usageVolume) * 1.2
     ).toFixed(2);
   }
 
