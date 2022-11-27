@@ -1,12 +1,12 @@
-# fly.toml file generated for phone-invoces on 2022-09-17T22:42:04+03:00
+# fly.toml file generated for invoices-api on 2022-09-17T22:42:04+03:00
 
-app = "phone-invoces"
+app = "invoices-api"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
 [env]
-  POSTGRES_HOST="phone-invoces-db.internal"
+  POSTGRES_HOST="invoices-api-db.internal"
   POSTGRES_PORT="5432"
   MODE="DEV"
   NODE_ENV="production"
