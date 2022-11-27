@@ -22,7 +22,7 @@ export class HistoryRecordService {
       calculatedPhones.map((phone) => {
         return this.create({
           phone,
-          charge: Number(phone.price),
+          charge: phone.price,
           date: new Date(),
         });
       }),

@@ -1,4 +1,4 @@
-import { Entity, Property, PrimaryKey, ManyToOne } from '@mikro-orm/core';
+import { Entity, Property, PrimaryKey, ManyToOne, types } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 import { Phone } from '../phone/phone.entity';
 
@@ -17,6 +17,6 @@ export class HistoryRecord {
   date: Date;
 
   @ApiProperty()
-  @Property()
-  charge: number;
+  @Property({ type: types.float })
+  charge: string;
 }

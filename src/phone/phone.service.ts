@@ -133,7 +133,7 @@ export class PhoneService {
     );
 
     // Create history records if they don't exist
-    if (!this.historyRecordService.hasRecordedMonth(new Date())) {
+    if (!(await this.historyRecordService.hasRecordedMonth(new Date()))) {
       await this.historyRecordService.createMany(calculatedPhones);
     }
 

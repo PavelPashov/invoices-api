@@ -201,12 +201,12 @@
         },
         "charge": {
           "name": "charge",
-          "type": "int",
+          "type": "real",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "mappedType": "float"
         }
       },
       "name": "history_record",

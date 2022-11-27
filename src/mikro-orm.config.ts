@@ -11,6 +11,10 @@ const MikroOrmConfig: Options = {
   password: configService.get('POSTGRES_PASSWORD'),
   host: configService.get('POSTGRES_HOST'),
   port: configService.get('POSTGRES_PORT'),
+  migrations: {
+    path: 'dist/migrations',
+    pathTs: 'src/migrations',
+  },
 };
 
 export default MikroOrmConfig;
