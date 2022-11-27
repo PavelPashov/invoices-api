@@ -45,7 +45,4 @@ COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/node_modules/ ./node_modules
 COPY --from=development /usr/src/app/package*.json ./
 
-EXPOSE 5000
-ENV PORT 5000
-
 CMD ["node", "dist/main"]

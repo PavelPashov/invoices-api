@@ -111,46 +111,49 @@ export class PdfService {
   ) {
     const dirPath = await createTempDir();
 
-    const promises = calculatedPhoneArrays
-      .filter((phonesArray: Phone[]) => !!phonesArray.length)
-      .map((phonesArray: Phone[]) => {
-        return this.savePdfToDisk(
-          TemplateNames.ALL_NUMBERS,
-          {
-            array: phonesArray,
-            name: phonesArray[0].invoice ?? 'test',
-            sum: Number(
-              phonesArray
-                .reduce((sum, num) => sum + Number(num.price), 0)
-                .toFixed(2),
-            ),
-            groupArray: createTotalSumArray(phonesArray, 'tag'),
-          },
-          dirPath,
-        );
-      });
+    const filesArray: string[] = []
 
-    const filesArray = await Promise.all([
-      ...promises,
-      this.savePdfToDisk(
-        TemplateNames.SUMMED,
+    const filteredPhoneArrays = calculatedPhoneArrays
+      .filter((phonesArray: Phone[]) => !!phonesArray.length)
+
+    for await (const phonesArray of filteredPhoneArrays) {
+      const path = await this.savePdfToDisk(
+        TemplateNames.ALL_NUMBERS,
         {
-          array: calculatedPhonesByGroup,
-          name: 'Сумирани групи',
-          type: PdfReportTypes.GROUP,
+          array: phonesArray,
+          name: phonesArray[0].invoice ?? 'test',
+          sum: Number(
+            phonesArray
+              .reduce((sum, num) => sum + Number(num.price), 0)
+              .toFixed(2),
+          ),
+          groupArray: createTotalSumArray(phonesArray, 'tag'),
         },
         dirPath,
-      ),
-      this.savePdfToDisk(
-        TemplateNames.SUMMED,
-        {
-          array: calculatedPhonesByLocation,
-          name: 'Сумирани локации',
-          type: PdfReportTypes.LOCATION,
-        },
-        dirPath,
-      ),
-    ]);
+      );
+      filesArray.push(path)
+    }
+
+    const summedGroupsPath = await this.savePdfToDisk(
+      TemplateNames.SUMMED,
+      {
+        array: calculatedPhonesByGroup,
+        name: 'Сумирани групи',
+        type: PdfReportTypes.GROUP,
+      },
+      dirPath,
+    );
+    filesArray.push(summedGroupsPath)
+    const summedLocationsPath = await this.savePdfToDisk(
+      TemplateNames.SUMMED,
+      {
+        array: calculatedPhonesByLocation,
+        name: 'Сумирани локации',
+        type: PdfReportTypes.LOCATION,
+      },
+      dirPath,
+    );
+    filesArray.push(summedLocationsPath)
 
     return { dirPath, files: filesArray };
   }
@@ -158,7 +161,9 @@ export class PdfService {
   async mergeAllPdfFiles(filePaths: string[], dirPath: string) {
     const savedPath = join(dirPath, `Фактури-${getCurrentMonth()}.pdf`);
     const merger = new PDFMerger();
-    await Promise.all(filePaths.map(async (f) => await merger.add(f)));
+    for await (const fp of filePaths) {
+      await merger.add(fp)
+    }
     await merger.save(savedPath);
     return savedPath;
   }

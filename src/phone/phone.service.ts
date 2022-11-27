@@ -10,7 +10,7 @@ import {
   saveFile,
   unzipFile,
 } from './../common/utils';
-import { EntityRepository, wrap, QueryOrder } from '@mikro-orm/core';
+import { EntityRepository, wrap} from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import EntityNotFoundException from 'src/common/exceptions/EntityNotFound.exception';
