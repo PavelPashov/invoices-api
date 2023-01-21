@@ -3,6 +3,7 @@ import { Phone } from 'src/phone/phone.entity';
 export enum TemplateNames {
   ALL_NUMBERS = 'allNumbers',
   SUMMED = 'summed',
+  SUMMED_WITH_TOTAL = 'summedWithTotal',
 }
 
 export enum PdfReportTypes {
@@ -32,4 +33,11 @@ export interface PdfParamsSummed {
   name: string;
   array: SummedEntity[];
   type: PdfReportTypes;
+}
+
+export interface PdfParamsSummedWithTotal {
+  name: string;
+  array: SummedEntity[];
+  type: PdfReportTypes;
+  sumTotal: string;
 }
