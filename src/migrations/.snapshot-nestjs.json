@@ -201,12 +201,12 @@
         },
         "charge": {
           "name": "charge",
-          "type": "real",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "float"
+          "mappedType": "string"
         }
       },
       "name": "history_record",

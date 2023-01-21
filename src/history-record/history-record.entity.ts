@@ -17,6 +17,6 @@ export class HistoryRecord {
   date: Date;
 
   @ApiProperty()
-  @Property({ type: types.float })
+  @Property()
   charge: string;
 }
