@@ -75,3 +75,11 @@ Nest is [MIT licensed](LICENSE).
 ## Connect to prod DB
 
 ```fly proxy 1111:5432 -a phone-invoces-db```
+
+## Deploy to Fly.io
+
+```flyctl deploy```
+
+or 
+
+```./deploy.sh```
