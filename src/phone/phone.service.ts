@@ -1,6 +1,7 @@
 import { PdfService } from './../pdf/pdf.service';
 import { HistoryRecordService } from './../history-record/history-record.service';
 import {
+  createCalculatedLocationAndTagArrays,
   createTotalSumArray,
   getCurrentMonth,
   getFiles,
@@ -122,11 +123,15 @@ export class PhoneService {
       invoicesArrays.map(async (array) => await this.calculatePrices(array)),
     );
 
-    const calculatedPhones = Array.prototype.concat(...calculatedPhoneArrays);
+    const calculatedPhones: Phone[] = Array.prototype.concat(...calculatedPhoneArrays);
+    
     const calculatedPhonesByGroup = createTotalSumArray(
       calculatedPhones,
       'tag',
     );
+
+    const calculatedPhonesByLocationAndTag = createCalculatedLocationAndTagArrays(calculatedPhones)
+      
     const calculatedPhonesByLocation = createTotalSumArray(
       calculatedPhones,
       'location',
@@ -141,6 +146,7 @@ export class PhoneService {
       calculatedPhoneArrays,
       calculatedPhonesByGroup,
       calculatedPhonesByLocation,
+      calculatedPhonesByLocationAndTag
     );
 
     const finalFilePath = await this.pdfService.mergeAllPdfFiles(

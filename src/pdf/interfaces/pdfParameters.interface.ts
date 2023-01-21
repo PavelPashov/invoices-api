@@ -8,11 +8,17 @@ export enum TemplateNames {
 export enum PdfReportTypes {
   GROUP = 'група',
   LOCATION = 'локация',
+  LOCATION_GROUP = 'локация и група',
 }
 
 export type SummedEntity = {
   name: string;
   sum: number;
+};
+
+export type ByLocationAndTagEntity = {
+  name: string;
+  sums: SummedEntity[];
 };
 
 export interface PdfParamsAllNumbers {
