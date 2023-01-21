@@ -9,6 +9,7 @@ import {
   PdfParamsSummed,
   PdfReportTypes,
   TemplateNames,
+  ByLocationAndTagEntity,
 } from './interfaces/pdfParameters.interface';
 import * as fs from 'fs/promises';
 import EntityNotFoundException from 'src/common/exceptions/EntityNotFound.exception';
@@ -108,6 +109,7 @@ export class PdfService {
     calculatedPhoneArrays: Phone[][],
     calculatedPhonesByGroup: SummedEntity[],
     calculatedPhonesByLocation: SummedEntity[],
+    calculatedPhonesByLocationAndTag: ByLocationAndTagEntity[],
   ) {
     const dirPath = await createTempDir();
 
@@ -154,6 +156,20 @@ export class PdfService {
       dirPath,
     );
     filesArray.push(summedLocationsPath)
+
+
+    for await (const byLocationAndTagEntity of calculatedPhonesByLocationAndTag) {
+      const path = await this.savePdfToDisk(
+        TemplateNames.SUMMED,
+        {
+          array: byLocationAndTagEntity.sums,
+          name: `${byLocationAndTagEntity.name} - ${PdfReportTypes.LOCATION_GROUP}`,
+          type: PdfReportTypes.LOCATION_GROUP,
+        },
+        dirPath,
+      );
+      filesArray.push(path)
+    }
 
     return { dirPath, files: filesArray };
   }

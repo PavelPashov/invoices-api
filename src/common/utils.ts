@@ -4,6 +4,7 @@ import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import * as os from 'os';
 import { Months } from './enums/months.enum';
+import { Phone } from 'src/phone/phone.entity';
 
 export const createTotalSumArray = <T extends Record<string, any>>(
   fromArray: T[],
@@ -30,6 +31,22 @@ export const createTotalSumArray = <T extends Record<string, any>>(
     sum: Number(Number(object[k]).toFixed(2)),
   }));
 };
+
+export const createCalculatedLocationAndTagArrays = (calculatedPhones: Phone[]) => {
+  const createLocationArrays = calculatedPhones.reduce<Record<string, Phone[]>>((prev, next) => {
+    if (!prev[next.location.name]) {
+      return {...prev, [next.location.name]: [next]} 
+    }
+    return {...prev, [next.location.name]: [...prev[next.location.name], next]} 
+  },{})
+
+  return Object.keys(createLocationArrays).map((key) => {
+    const phonesWithoutGroup = createLocationArrays[key].filter((phone) => !phone.tag)
+    const transformedPhonesWithoutTag = phonesWithoutGroup.map((phone) => ({name: phone.name, sum: Number(phone.price)}))
+    const groupSums = createTotalSumArray(createLocationArrays[key], 'tag')
+    return {name: key, sums: [...transformedPhonesWithoutTag, ...groupSums]}
+  })
+}
 
 export const isZipFile = (file: Express.Multer.File) => {
   const zipMimeTypes = [
